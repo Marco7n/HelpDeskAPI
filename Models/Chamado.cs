@@ -1,7 +1,8 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 namespace HelpDeskAPI.Models
 
 {
+    // TODO Marco: conferir os campos com o banco e alinhar o relacionamento com ApplicationUser (Nicolas).
     public class Chamado
     {
         public int Id { get; set; }

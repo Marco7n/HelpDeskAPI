@@ -1,5 +1,7 @@
-﻿namespace HelpDeskAPI.Models
+namespace HelpDeskAPI.Models
 {
+    // TODO Marco: alinhar AutorId com o Id de ApplicationUser e configurar o relacionamento do autor.
+    // TODO Marco: conferir o mapeamento de DataCriacao e ChamadoId com o banco existente.
     public class Interacao
     {
         public int Id { get; set; }

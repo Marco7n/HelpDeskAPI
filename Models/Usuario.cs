@@ -1,6 +1,6 @@
 ﻿namespace HelpDeskAPI.Models
 {
-    public class AplicationUser
+    public class Usuario
     {
     }
 }
