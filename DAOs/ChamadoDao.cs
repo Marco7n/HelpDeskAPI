@@ -1,20 +1,90 @@
+using HelpDeskAPI.Data;
 using HelpDeskAPI.Models;
 using System.Collections.ObjectModel;
+using Microsoft.EntityFrameworkCore;
 
 namespace HelpDeskAPI.DAOs
 {
-    // TODO Lucas: receber HelpDeskContext no construtor e implementar as operacoes de ChamadoDao.
-    // Os campos abaixo sao o rascunho original; revisar sua necessidade ao escrever as operacoes.
-    // Os dados do chamado pertencem ao Model Chamado; o DAO deve acessar o banco pelo contexto.
-    // TODO Lucas: implementar as consultas por situacao e prioridade e integra-las ao controller.
+  
     public class ChamadoDao
     {
-        int id;
-        String titulo;
-        String descricao;
-        String Status;
-        String propriedade;
-        DateTime DataCriacao;
-        Collection<Interacao> Interacoes = new Collection<Interacao>();
+
+        private readonly HelpDeskContext _contexto;
+        public ChamadoDao(HelpDeskContext contexto )
+        {
+            _contexto = contexto;
+           
+        }
+        
+        public async Task AdicionarAsync(Chamado chamado)
+        {
+
+            await _contexto.Chamados.AddAsync(chamado);
+            await _contexto.SaveChangesAsync();
+         
+        }
+        public async Task<Chamado?> BuscarPorIdAsync(int id) {
+            
+           var encontrar = await _contexto.Chamados.FindAsync(id);
+            return encontrar;
+        }
+        public async Task<List<Chamado>> ListaTodosAsync() { 
+            var lista = await _contexto.Chamados.ToListAsync();
+            return lista;
+        }
+        public async Task<bool> AtualizarAsync(int id, Chamado dadosAtualizados)
+        {
+            var find = await _contexto.Chamados.FindAsync(id);
+            if (find == null)
+            {
+                return false;
+            }
+
+            find.Titulo = dadosAtualizados.Titulo;
+            find.Descricao = dadosAtualizados.Descricao;
+            find.Status = dadosAtualizados.Status;
+            find.Prioridade = dadosAtualizados.Prioridade;
+            await _contexto.SaveChangesAsync();
+            return true;
+
+
+        }
+        public async Task<bool> ExcluirAsync(int id)
+        {
+
+            var Encontrar = await _contexto.Chamados.FindAsync(id);
+            if (Encontrar == null)
+            {
+                return false;
+            }
+
+            _contexto.Chamados.Remove(Encontrar);
+            await _contexto.SaveChangesAsync();
+            return true;
+        }
+        public async Task<List<Chamado>> BuscarPorStatusAsync(string status)
+        {
+            var BuscaStatus = await _contexto.Chamados
+                .Where(s => s.Status == status)
+                .ToListAsync();
+
+            return BuscaStatus;
+
+
+        }
+
+        public async Task<List<Chamado>> BuscarPorPrioridadeAsync(string prioridade)
+        {
+
+            var BuscaPrioridade = await _contexto.Chamados
+                   .Where(p => p.Prioridade == prioridade)
+                   .ToListAsync();
+
+            return BuscaPrioridade;
+
+
+        }
+
+    
     }
 }
