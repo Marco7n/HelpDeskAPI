@@ -1,8 +1,8 @@
-using System.Collections.ObjectModel;
+using System.Text.Json.Serialization;
+
 namespace HelpDeskAPI.Models
 
 {
-    // TODO Marco: conferir os campos com o banco e alinhar o relacionamento com Usuario.
     public class Chamado
     {
         public int Id { get; set; }
@@ -13,8 +13,10 @@ namespace HelpDeskAPI.Models
         public DateTime DataCriacao { get; set; }
         public int UsuarioId { get; set; }
 
-        public Usuario Usuario { get; set; } = null!;
-      
+        [JsonIgnore]
+        public Usuario? Usuario { get; set; }
+
+        [JsonIgnore]
         public ICollection<Interacao> Interacoes { get; set; } = new List<Interacao>();
     }
 }

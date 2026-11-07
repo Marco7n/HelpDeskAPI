@@ -1,14 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
 using HelpDeskAPI.DAOs;
-namespace HelpDeskAPI.Controllers
 using HelpDeskAPI.Models;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 
-
+namespace HelpDeskAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]
     public class ChamadosController : ControllerBase
     {
+        private const int CodigoRestricaoChaveEstrangeira = 787;
+
         private readonly ChamadoDao _chamadoDao;
         public ChamadosController(ChamadoDao chamadoDao)
         {
@@ -38,7 +41,15 @@ using HelpDeskAPI.Models;
         public async Task<IActionResult> Cadastrar([FromBody] Chamado chamado)
         {
 
-            await _chamadoDao.AdicionarAsync(chamado);
+            try
+            {
+                await _chamadoDao.AdicionarAsync(chamado);
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is SqliteException
+                { SqliteExtendedErrorCode: CodigoRestricaoChaveEstrangeira })
+            {
+                return BadRequest(new ProblemDetails { Detail = "UsuarioId não referencia um usuário existente." });
+            }
 
             return CreatedAtAction(
             nameof(Buscar),
@@ -68,11 +79,17 @@ using HelpDeskAPI.Models;
         public async Task<IActionResult> Excluir(int id)
         {
 
-            var excluir = await _chamadoDao.ExcluirAsync(id);
-            if (!excluir)
+            try
             {
-                return NotFound();
-
+                if (!await _chamadoDao.ExcluirAsync(id))
+                {
+                    return NotFound();
+                }
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is SqliteException
+                { SqliteExtendedErrorCode: CodigoRestricaoChaveEstrangeira })
+            {
+                return Conflict(new ProblemDetails { Detail = "O chamado possui interações vinculadas." });
             }
             return NoContent();
 

@@ -361,3 +361,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Banco SQLite local
+/helpdesk.db
+/helpdesk.db-journal
+/helpdesk.db-shm
+/helpdesk.db-wal

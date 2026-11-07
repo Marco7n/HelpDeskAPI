@@ -1,6 +1,5 @@
 namespace HelpDeskAPI.Models
 {
-    // TODO Marco: representar a tabela usuario e alinhar os campos com a autenticacao de Nicolas.
     public class Usuario
     {
         public int Id { get; set; } 
