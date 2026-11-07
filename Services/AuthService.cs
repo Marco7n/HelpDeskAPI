@@ -21,6 +21,7 @@ namespace HelpDeskAPI.Services
 
         public async Task<string?> LoginAsync(string email, string senha)
         {
+
             var usuario = await _contexto.Usuarios
                 .FirstOrDefaultAsync(usuario => usuario.Email == email);
 
@@ -39,6 +40,7 @@ namespace HelpDeskAPI.Services
 
         private string GerarToken(Usuario usuario)
         {
+
             var chave = _configuracao["Jwt:Key"]
                 ?? throw new InvalidOperationException("A chave Jwt:Key não foi configurada.");
 
@@ -51,6 +53,7 @@ namespace HelpDeskAPI.Services
 
             var chaveSegura = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(chave));
             var credenciais = new SigningCredentials(chaveSegura, SecurityAlgorithms.HmacSha256);
+
             var token = new JwtSecurityToken(
                 claims: claims,
                 expires: DateTime.UtcNow.AddHours(2),
