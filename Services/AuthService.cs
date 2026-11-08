@@ -61,5 +61,11 @@ namespace HelpDeskAPI.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+        
+        
+        public string GerarHash(string senha)
+        {
+            return BCrypt.Net.BCrypt.HashPassword(senha);
+        }
     }
 }

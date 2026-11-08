@@ -36,13 +36,16 @@ namespace HelpDeskAPI.DAOs
         }
         public async Task<bool> AtualizarAsync(int id, Usuario dadosAtualizados)
         {
-            var find = await _contexto.Usuarios.FindAsync(id);
-            if (find == null)
+            var usuario = await _contexto.Usuarios.FindAsync(id);
+            
+            if (usuario == null)
             {
                 return false;
             }
 
-          
+            usuario.Nome = dadosAtualizados.Nome;
+                usuario.Email = dadosAtualizados.Email;
+            
             await _contexto.SaveChangesAsync();
             return true;
 

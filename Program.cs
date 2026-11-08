@@ -16,6 +16,7 @@ builder.Services.AddDbContext<HelpDeskContext>(options => options.UseSqlite(conn
 builder.Services.AddScoped<ChamadoDao>();
 builder.Services.AddScoped<InteracaoDao>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<UsuarioDao>();
 
 var chaveJwt = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException("Configure Jwt:Key.");

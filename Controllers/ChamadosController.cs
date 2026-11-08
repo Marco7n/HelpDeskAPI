@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace HelpDeskAPI.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/chamados")]
     public class ChamadosController : ControllerBase
     {
         private const int CodigoRestricaoChaveEstrangeira = 787;

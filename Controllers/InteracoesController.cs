@@ -6,7 +6,7 @@ using HelpDeskAPI.Models;
 namespace HelpDeskAPI.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/interacoes")]
 
     public class InteracoesController : ControllerBase
     {
