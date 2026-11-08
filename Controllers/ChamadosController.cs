@@ -43,7 +43,7 @@ namespace HelpDeskAPI.Controllers
             return Ok(busca);
         }
         [HttpPost]
-        [Authorize(Roles = "Cliente")]
+        [Authorize]
         public async Task<IActionResult> Cadastrar([FromBody] Chamado chamado)
         {
             if (UsuarioId is not int usuarioId) return Forbid();

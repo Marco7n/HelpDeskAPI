@@ -1,4 +1,4 @@
-﻿using HelpDeskAPI.Services;
+using HelpDeskAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HelpDeskAPI.Controllers
