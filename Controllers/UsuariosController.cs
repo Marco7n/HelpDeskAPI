@@ -20,7 +20,9 @@ namespace HelpDeskAPI.Controllers
                 this._usuarioDao = _usuarioDao;
                 this._authService = authService;
             }
-
+            
+            
+            
             [HttpGet]
             public async Task<IActionResult> Listar()
             {
@@ -56,16 +58,19 @@ namespace HelpDeskAPI.Controllers
             public async Task<IActionResult> Cadastrar([FromBody]  UsuarioCadastroDto dados)
             {
 
-
-                var usuario = new Usuario
+                try
                 {
-                    Nome = dados.Nome,
-                    Email = dados.Email,
-                    SenhaHash = _authService.GerarHash(dados.Senha),
-                    Perfil = "usuario"
-                };
-                
-                await _usuarioDao.AdicionarAsync(usuario);
+                    var usuario = new Usuario
+                    {
+                        Nome = dados.Nome,
+                        Email = dados.Email,
+                        SenhaHash = _authService.GerarHash(dados.Senha),
+                        Perfil = "usuario"
+                    };
+
+                    await _usuarioDao.AdicionarAsync(usuario);
+               
+
 
                 var respostaDtos = new UsuarioRespostaDto
                 {
@@ -75,12 +80,19 @@ namespace HelpDeskAPI.Controllers
                     Perfil = usuario.Perfil
                 };
 
+                
 
                 return CreatedAtAction(
                     nameof(Buscar),
                     new { id = usuario.Id },
                     respostaDtos
                 );
+                
+                }
+                catch (Exception e)
+                {
+                    return BadRequest("Nao foi possivel cadastrar os dados");
+                }
 
             }
 
@@ -98,7 +110,7 @@ namespace HelpDeskAPI.Controllers
                 
                 if (!atualizado)
                 {
-                    return NotFound();
+                    return BadRequest("Nao foi possivel atualizar o usuario");
                 }
 
                 return NoContent();
@@ -121,26 +133,18 @@ namespace HelpDeskAPI.Controllers
 
 
             }
-
-            [HttpGet("status/{status}")]
-
-            public async Task<IActionResult> BuscarPorStatusAsync(string status)
-            {
-
-                var buscarStatus = await _usuarioDao.BuscarPorStatusAsync(status);
-
-                return Ok(buscarStatus);
-
-
-
-            }
-
+            
             [HttpGet("prioridade/{prioridade}")]
 
             public async Task<IActionResult> BuscarNomeAsync(string prioridade)
             {
 
                 var buscarPrioridade = await _usuarioDao.BuscarNomeAsync(prioridade);
+
+                if (buscarPrioridade == null)
+                {
+                    return NotFound();
+                }
 
                 return Ok(buscarPrioridade);
             }
