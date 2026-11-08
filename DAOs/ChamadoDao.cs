@@ -1,34 +1,57 @@
 using HelpDeskAPI.Data;
 using HelpDeskAPI.Models;
 using System.Collections.ObjectModel;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace HelpDeskAPI.DAOs
 {
-  
+
     public class ChamadoDao
     {
 
         private readonly HelpDeskContext _contexto;
-        public ChamadoDao(HelpDeskContext contexto )
+
+        public ChamadoDao(HelpDeskContext contexto)
         {
             _contexto = contexto;
-           
+
         }
-        
+
         public async Task AdicionarAsync(Chamado chamado)
         {
 
             await _contexto.Chamados.AddAsync(chamado);
             await _contexto.SaveChangesAsync();
-         
+
         }
-        public async Task<Chamado?> BuscarPorIdAsync(int id) {
+
+        public async Task<Chamado?> BuscarPorIdAsync(int id)
+        {
+
+            try
+            {
+                var encontrar = await _contexto.Chamados.FindAsync(id);
+
+                if (encontrar == null)
+                {
+                    return null;
+                }
+
+                return encontrar;
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.GetBaseException().Message);
+                throw;
+            }
             
-           var encontrar = await _contexto.Chamados.FindAsync(id);
-            return encontrar;
         }
-        public async Task<List<Chamado>> ListaTodosAsync() { 
+    
+
+
+    public async Task<List<Chamado>> ListaTodosAsync() { 
             var lista = await _contexto.Chamados.ToListAsync();
             return lista;
         }
@@ -47,19 +70,29 @@ namespace HelpDeskAPI.DAOs
 
 
         }
+
         public async Task<bool> ExcluirAsync(int id)
         {
 
-            var Encontrar = await _contexto.Chamados.FindAsync(id);
-            if (Encontrar == null)
+            try
             {
-                return false;
-            }
+                var Encontrar = await _contexto.Chamados.FindAsync(id);
+                if (Encontrar == null)
+                {
+                    return false;
+                }
 
-            _contexto.Chamados.Remove(Encontrar);
-            await _contexto.SaveChangesAsync();
-            return true;
+                _contexto.Chamados.Remove(Encontrar);
+                await _contexto.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.GetBaseException().Message);
+                throw;
+            }
         }
+
         public async Task<List<Chamado>> BuscarPorStatusAsync(string status)
         {
             var BuscaStatus = await _contexto.Chamados

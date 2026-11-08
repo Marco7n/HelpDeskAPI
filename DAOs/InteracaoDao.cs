@@ -31,6 +31,7 @@ namespace HelpDeskAPI.DAOs
 
         public async Task<bool> AtualizarAsync(int id, Interacao dadosAtualizados)
         {
+            
             var interacao = await _contexto.Interacoes.FindAsync(id);
             if (interacao == null)
             {
@@ -62,7 +63,16 @@ namespace HelpDeskAPI.DAOs
 
         public Task<List<Interacao>> BuscarPorUsuarioAsync(int usuarioId)
         {
-            return _contexto.Interacoes.Where(item => item.UsuarioId == usuarioId).ToListAsync();
+            try
+            {
+                return _contexto.Interacoes.Where(item => item.UsuarioId == usuarioId).ToListAsync();
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
     }
 }
