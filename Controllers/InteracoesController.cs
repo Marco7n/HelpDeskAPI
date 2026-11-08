@@ -57,6 +57,7 @@ namespace HelpDeskAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize]
 
         public async Task<IActionResult> Cadastrar([FromBody] Interacao interacao)
         {
@@ -73,6 +74,7 @@ namespace HelpDeskAPI.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Atendente")]
 
         public async Task<IActionResult> Atualizar(int id, [FromBody] Interacao dadosAtualizados)
         {
