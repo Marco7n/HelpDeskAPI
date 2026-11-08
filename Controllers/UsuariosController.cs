@@ -20,6 +20,10 @@ namespace HelpDeskAPI.Controllers
                 this._usuarioDao = _usuarioDao;
                 this._authService = authService;
             }
+            
+            
+            
+            publid 
 
             [HttpGet]
             public async Task<IActionResult> Listar()
