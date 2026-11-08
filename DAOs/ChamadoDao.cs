@@ -40,8 +40,6 @@ namespace HelpDeskAPI.DAOs
                 return false;
             }
 
-            find.Titulo = dadosAtualizados.Titulo;
-            find.Descricao = dadosAtualizados.Descricao;
             find.Status = dadosAtualizados.Status;
             find.Prioridade = dadosAtualizados.Prioridade;
             await _contexto.SaveChangesAsync();
