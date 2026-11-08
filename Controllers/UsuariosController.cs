@@ -23,8 +23,6 @@ namespace HelpDeskAPI.Controllers
             
             
             
-            publid 
-
             [HttpGet]
             public async Task<IActionResult> Listar()
             {
