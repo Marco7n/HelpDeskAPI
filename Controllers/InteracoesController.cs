@@ -124,8 +124,13 @@ namespace HelpDeskAPI.Controllers
         {
             if (UsuarioId is not int meuId) return Forbid();
             var buscarUsuario = await _interacaoDao.BuscarPorUsuarioAsync(usuarioId);
+           
+            
             if (User.IsInRole("Atendente")) return Ok(buscarUsuario);
+           
+            
             var chamados = await _chamadoDao.ListaTodosAsync();
+            
             var meusChamados = chamados.Where(chamado => chamado.UsuarioId == meuId)
                 .Select(chamado => chamado.Id).ToHashSet();
             return Ok(buscarUsuario.Where(interacao => meusChamados.Contains(interacao.ChamadoId)));
