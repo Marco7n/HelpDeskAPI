@@ -50,7 +50,7 @@ namespace HelpDeskAPI.Controllers
                 {
                     return NotFound();
                 }
-
+                
                 return Ok(busca);
             }
 
