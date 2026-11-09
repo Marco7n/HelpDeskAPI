@@ -65,7 +65,7 @@ namespace HelpDeskAPI.Controllers
                         Nome = dados.Nome,
                         Email = dados.Email,
                         SenhaHash = _authService.GerarHash(dados.Senha),
-                        Perfil = "usuario"
+                        Perfil = "Cliente"
                     };
 
                     await _usuarioDao.AdicionarAsync(usuario);

@@ -1,0 +1,90 @@
+@baseUrl=http://localhost:5078
+@email=cliente3@exemplo.com
+@senha=Senha12345
+
+# 1. Cadastrar cliente. Se o email ja existir, troque a variavel @email acima.
+# @name cadastro
+POST {{baseUrl}}/api/UsuariosController
+Content-Type: application/json
+
+{
+  "nome": "Cliente Demo",
+  "email": "{{email}}",
+  "senha": "{{senha}}"
+}
+
+###
+
+# 2. Login. Envie esta requisicao antes das demais protegidas.
+# @name login
+POST {{baseUrl}}/Auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "senha": "{{senha}}"
+}
+
+###
+
+# 3. Listar chamados do cliente.
+GET {{baseUrl}}/api/chamados
+Authorization: Bearer {{login.response.body.$.token}}
+
+###
+
+# 4. Criar chamado. O ID retornado sera usado nos proximos testes.
+# @name chamado
+POST {{baseUrl}}/api/chamados
+Authorization: Bearer {{login.response.body.$.token}}
+Content-Type: application/json
+
+{
+  "titulo": "Impressora",
+  "descricao": "Teste de atendimento",
+  "status": "Aberto",
+  "prioridade": "Alta"
+}
+
+###
+
+# 5. Consultar o chamado criado.
+GET {{baseUrl}}/api/chamados/{{chamado.response.body.$.id}}
+Authorization: Bearer {{login.response.body.$.token}}
+
+###
+
+# 6. Filtrar chamados abertos.
+GET {{baseUrl}}/api/chamados/status/Aberto
+Authorization: Bearer {{login.response.body.$.token}}
+
+###
+
+# 7. Criar interacao no chamado.
+# @name interacao
+POST {{baseUrl}}/api/interacoes
+Authorization: Bearer {{login.response.body.$.token}}
+Content-Type: application/json
+
+{
+  "mensagem": "Preciso de ajuda",
+  "chamadoId": {{chamado.response.body.$.id}}
+}
+
+###
+
+# 8. Listar interacoes do chamado.
+GET {{baseUrl}}/api/interacoes/chamado/{{chamado.response.body.$.id}}
+Authorization: Bearer {{login.response.body.$.token}}
+
+###
+
+# 9. Confirmar que Cliente nao pode alterar chamado (resposta esperada: 403).
+PUT {{baseUrl}}/api/chamados/{{chamado.response.body.$.id}}
+Authorization: Bearer {{login.response.body.$.token}}
+Content-Type: application/json
+
+{
+  "status": "Concluido",
+  "prioridade": "Baixa"
+}
