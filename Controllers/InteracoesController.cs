@@ -61,6 +61,11 @@ namespace HelpDeskAPI.Controllers
 
         public async Task<IActionResult> Cadastrar([FromBody] Interacao interacao)
         {
+            if (string.IsNullOrWhiteSpace(interacao.Mensagem))
+            {
+                return BadRequest("A mensagem é obrigatória.");
+            }
+
             if (UsuarioId is not int usuarioId) return Forbid();
             if (!await PodeAcessarChamado(interacao.ChamadoId, usuarioId)) return NotFound();
             interacao.UsuarioId = usuarioId;
@@ -78,6 +83,11 @@ namespace HelpDeskAPI.Controllers
 
         public async Task<IActionResult> Atualizar(int id, [FromBody] Interacao dadosAtualizados)
         {
+            if (string.IsNullOrWhiteSpace(dadosAtualizados.Mensagem))
+            {
+                return BadRequest("A mensagem é obrigatória.");
+            }
+
             if (UsuarioId is not int usuarioId) return Forbid();
             var interacao = await _interacaoDao.BuscarPorIdAsync(id);
             if (interacao == null || !await PodeAcessarChamado(interacao.ChamadoId, usuarioId)) return NotFound();

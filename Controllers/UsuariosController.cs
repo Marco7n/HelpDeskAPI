@@ -1,155 +1,122 @@
-﻿using HelpDeskAPI.DAOs;
+using HelpDeskAPI.DAOs;
 using HelpDeskAPI.DTOs;
 using HelpDeskAPI.Models;
-using Microsoft.AspNetCore.Mvc;
-using HelpDeskAPI.Models;
 using HelpDeskAPI.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace HelpDeskAPI.Controllers
 {
-    
-        [ApiController]
-        [Route("api/UsuariosController")]
-        public class UsuariosController : ControllerBase
+    [ApiController]
+    [Route("api/UsuariosController")]
+    public class UsuariosController : ControllerBase
+    {
+        private readonly UsuarioDao _usuarioDao;
+        private readonly AuthService _authService;
+
+        public UsuariosController(UsuarioDao usuarioDao, AuthService authService)
         {
-            private readonly UsuarioDao _usuarioDao;
-            private readonly AuthService _authService;
+            _usuarioDao = usuarioDao;
+            _authService = authService;
+        }
 
-            public UsuariosController(UsuarioDao _usuarioDao, AuthService authService)
+        private static UsuarioRespostaDto Resposta(Usuario usuario) => new()
+        {
+            Id = usuario.Id,
+            Nome = usuario.Nome,
+            Email = usuario.Email,
+            Perfil = usuario.Perfil
+        };
+
+        [HttpGet]
+        public async Task<IActionResult> Listar()
+        {
+            var lista = await _usuarioDao.ListaTodosAsync();
+            return Ok(lista.Select(Resposta));
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Buscar(int id)
+        {
+            var usuario = await _usuarioDao.BuscarPorIdAsync(id);
+            if (usuario == null)
             {
-                this._usuarioDao = _usuarioDao;
-                this._authService = authService;
-            }
-            
-            
-            
-            [HttpGet]
-            public async Task<IActionResult> Listar()
-            {
-                var lista = await _usuarioDao.ListaTodosAsync();
-
-                var resposta = lista.Select(usuario => new UsuarioRespostaDto
-                {
-                    Id = usuario.Id,
-                    Nome = usuario.Nome,
-                    Email = usuario.Email,
-                    Perfil = usuario.Perfil
-                });
-                
-                
-                return Ok(resposta);
-
-
+                return NotFound();
             }
 
-            [HttpGet("{id}")]
-            public async Task<IActionResult> Buscar(int id)
-            {
-                var busca = await _usuarioDao.BuscarPorIdAsync(id);
-                if (busca == null)
-                {
-                    return NotFound();
-                }
-                
-                return Ok(busca);
-            }
+            return Ok(Resposta(usuario));
+        }
 
-            [HttpPost]
-            public async Task<IActionResult> Cadastrar([FromBody]  UsuarioCadastroDto dados)
-            {
-
-                try
-                {
-                    var usuario = new Usuario
-                    {
-                        Nome = dados.Nome,
-                        Email = dados.Email,
-                        SenhaHash = _authService.GerarHash(dados.Senha),
-                        Perfil = "Cliente"
-                    };
-
-                    await _usuarioDao.AdicionarAsync(usuario);
-               
-
-
-                var respostaDtos = new UsuarioRespostaDto
-                {
-                    Id = usuario.Id,
-                    Nome = usuario.Nome,
-                    Email = usuario.Email,
-                    Perfil = usuario.Perfil
-                };
-
-                
-
-                return CreatedAtAction(
-                    nameof(Buscar),
-                    new { id = usuario.Id },
-                    respostaDtos
-                );
-                
-                }
-                catch (Exception e)
-                {
-                    return BadRequest("Nao foi possivel cadastrar os dados");
-                }
-
-            }
-
-            [HttpPut("{id}")]
-
-            public async Task<IActionResult> Atualizar(int id, [FromBody] UsuarioAtuliazacaoDtos dados)
+        [HttpPost]
+        public async Task<IActionResult> Cadastrar([FromBody] UsuarioCadastroDto dados)
+        {
+            try
             {
                 var usuario = new Usuario
                 {
                     Nome = dados.Nome,
                     Email = dados.Email,
+                    SenhaHash = _authService.GerarHash(dados.Senha),
+                    Perfil = "Cliente"
                 };
-                
-                bool atualizado = await _usuarioDao.AtualizarAsync(id, usuario);
-                
-                if (!atualizado)
-                {
-                    return BadRequest("Nao foi possivel atualizar o usuario");
-                }
 
-                return NoContent();
-
+                await _usuarioDao.AdicionarAsync(usuario);
+                return CreatedAtAction(nameof(Buscar), new { id = usuario.Id }, Resposta(usuario));
             }
-
-            [HttpDelete("{id}")]
-
-            public async Task<IActionResult> Excluir(int id)
+            catch (Exception)
             {
-
-                var excluir = await _usuarioDao.ExcluirAsync(id);
-                if (!excluir)
-                {
-                    return NotFound();
-
-                }
-
-                return NoContent();
-
-
+                return BadRequest("Nao foi possivel cadastrar os dados");
             }
-            
-            [HttpGet("prioridade/{prioridade}")]
+        }
 
-            public async Task<IActionResult> BuscarNomeAsync(string prioridade)
+        [HttpPut("{id}")]
+        [Authorize]
+        public async Task<IActionResult> Atualizar(int id, [FromBody] UsuarioAtuliazacaoDtos dados)
+        {
+            var meuId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!User.IsInRole("Atendente") && meuId != id.ToString())
             {
-
-                var buscarPrioridade = await _usuarioDao.BuscarNomeAsync(prioridade);
-
-                if (buscarPrioridade == null)
-                {
-                    return NotFound();
-                }
-
-                return Ok(buscarPrioridade);
+                return Forbid();
             }
 
+            var usuario = new Usuario
+            {
+                Nome = dados.Nome,
+                Email = dados.Email
+            };
+
+            if (!await _usuarioDao.AtualizarAsync(id, usuario))
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<IActionResult> Excluir(int id)
+        {
+            var meuId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!User.IsInRole("Atendente") && meuId != id.ToString())
+            {
+                return Forbid();
+            }
+
+            if (!await _usuarioDao.ExcluirAsync(id))
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
+
+        [HttpGet("prioridade/{prioridade}")]
+        public async Task<IActionResult> BuscarNomeAsync(string prioridade)
+        {
+            var usuarios = await _usuarioDao.BuscarNomeAsync(prioridade);
+            return Ok(usuarios.Select(Resposta));
         }
     }
-
-
+}

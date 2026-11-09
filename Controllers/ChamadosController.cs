@@ -15,6 +15,12 @@ namespace HelpDeskAPI.Controllers
     {
         private const int CodigoRestricaoChaveEstrangeira = 787;
 
+        private static bool StatusValido(string status) =>
+            status is "Aberto" or "Em andamento" or "Concluido";
+
+        private static bool PrioridadeValida(string prioridade) =>
+            prioridade is "Baixa" or "Media" or "Alta";
+
         private readonly ChamadoDao _chamadoDao;
         private int? UsuarioId => int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : null;
         public ChamadosController(ChamadoDao chamadoDao)
@@ -46,6 +52,17 @@ namespace HelpDeskAPI.Controllers
         [Authorize]
         public async Task<IActionResult> Cadastrar([FromBody] Chamado chamado)
         {
+            if (string.IsNullOrWhiteSpace(chamado.Titulo) ||
+                string.IsNullOrWhiteSpace(chamado.Descricao))
+            {
+                return BadRequest("Título e descrição são obrigatórios.");
+            }
+
+            if (!StatusValido(chamado.Status) || !PrioridadeValida(chamado.Prioridade))
+            {
+                return BadRequest("Status ou prioridade inválidos.");
+            }
+
             if (UsuarioId is not int usuarioId) return Forbid();
             chamado.UsuarioId = usuarioId;
             try
@@ -70,6 +87,11 @@ namespace HelpDeskAPI.Controllers
 
         public async Task<IActionResult> Atualizar(int id, [FromBody] Chamado dadosAtualizados)
         {
+            if (!StatusValido(dadosAtualizados.Status) ||
+                !PrioridadeValida(dadosAtualizados.Prioridade))
+            {
+                return BadRequest("Status ou prioridade inválidos.");
+            }
 
             bool atualizado = await _chamadoDao.AtualizarAsync(id, dadosAtualizados);
             if (!atualizado)
