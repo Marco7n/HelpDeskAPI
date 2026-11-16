@@ -1,6 +1,7 @@
-@baseUrl=http://localhost:5078
-@email=cliente3@exemplo.com
-@senha=Senha12345
+# Inicie a API com o perfil https e envie o login antes das rotas protegidas.
+@baseUrl=https://localhost:7235
+@email=cliente.demo@example.com
+@senha=DemoHelpDesk123!
 
 # 1. Cadastrar cliente. Se o email ja existir, troque a variavel @email acima.
 # @name cadastro

@@ -15,17 +15,19 @@ namespace HelpDeskAPI.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Usuario>().HasIndex(usuario => usuario.Email).IsUnique();
+            var usuario = modelBuilder.Entity<Usuario>();
+            usuario.Property(item => item.Email).HasMaxLength(254);
+            usuario.HasIndex(item => item.Email).IsUnique();
 
             var chamado = modelBuilder.Entity<Chamado>();
-            chamado.Property(item => item.DataCriacao).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            chamado.Property(item => item.DataCriacao).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
             chamado.HasOne(item => item.Usuario)
                 .WithMany()
                 .HasForeignKey(item => item.UsuarioId)
                 .OnDelete(DeleteBehavior.NoAction);
 
             var interacao = modelBuilder.Entity<Interacao>();
-            interacao.Property(item => item.DataCriacao).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            interacao.Property(item => item.DataCriacao).HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
             interacao.HasOne(item => item.Chamado)
                 .WithMany(item => item.Interacoes)
                 .HasForeignKey(item => item.ChamadoId)

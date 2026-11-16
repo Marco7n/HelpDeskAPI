@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using HelpDeskAPI.DAOs;
 using HelpDeskAPI.Models;
-using Microsoft.Data.Sqlite;
+using MySql.Data.MySqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
@@ -13,7 +13,8 @@ namespace HelpDeskAPI.Controllers
     [Authorize(Roles = "Cliente,Atendente")]
     public class ChamadosController : ControllerBase
     {
-        private const int CodigoRestricaoChaveEstrangeira = 787;
+        private const int CodigoUsuarioInexistente = 1452;
+        private const int CodigoChamadoComVinculos = 1451;
 
         private static bool StatusValido(string status) =>
             status is "Aberto" or "Em andamento" or "Concluido";
@@ -69,8 +70,8 @@ namespace HelpDeskAPI.Controllers
             {
                 await _chamadoDao.AdicionarAsync(chamado);
             }
-            catch (DbUpdateException ex) when (ex.InnerException is SqliteException
-                { SqliteExtendedErrorCode: CodigoRestricaoChaveEstrangeira })
+            catch (DbUpdateException ex) when (ex.InnerException is MySqlException
+                { Number: CodigoUsuarioInexistente })
             {
                 return BadRequest(new ProblemDetails { Detail = "UsuarioId não referencia um usuário existente." });
             }
@@ -117,8 +118,8 @@ namespace HelpDeskAPI.Controllers
                     return NotFound();
                 }
             }
-            catch (DbUpdateException ex) when (ex.InnerException is SqliteException
-                { SqliteExtendedErrorCode: CodigoRestricaoChaveEstrangeira })
+            catch (DbUpdateException ex) when (ex.InnerException is MySqlException
+                { Number: CodigoChamadoComVinculos })
             {
                 return Conflict(new ProblemDetails { Detail = "O chamado possui interações vinculadas." });
             }

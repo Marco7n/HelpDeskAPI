@@ -9,6 +9,7 @@ public class UsuarioCadastroDto
     
     [Required(ErrorMessage = "O e-mail é obrigatório.")]
     [EmailAddress(ErrorMessage = "E-mail inválido.")]
+    [MaxLength(254)]
     public string Email { get; set; } = string.Empty;
     
     [Required(ErrorMessage = "A senha é obrigatória.")]
