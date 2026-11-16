@@ -49,7 +49,19 @@ namespace HelpDeskAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Cadastrar([FromBody] UsuarioCadastroDto dados)
+        public Task<IActionResult> Cadastrar([FromBody] UsuarioCadastroDto dados)
+        {
+            return CadastrarUsuario(dados, "Cliente");
+        }
+
+        [HttpPost("atendentes")]
+        [Authorize(Roles = "Atendente")]
+        public Task<IActionResult> CadastrarAtendente([FromBody] UsuarioCadastroDto dados)
+        {
+            return CadastrarUsuario(dados, "Atendente");
+        }
+
+        private async Task<IActionResult> CadastrarUsuario(UsuarioCadastroDto dados, string perfil)
         {
             try
             {
@@ -58,7 +70,7 @@ namespace HelpDeskAPI.Controllers
                     Nome = dados.Nome,
                     Email = dados.Email,
                     SenhaHash = _authService.GerarHash(dados.Senha),
-                    Perfil = "Cliente"
+                    Perfil = perfil
                 };
 
                 await _usuarioDao.AdicionarAsync(usuario);

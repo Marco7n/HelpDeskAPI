@@ -2,6 +2,9 @@
 @baseUrl=https://localhost:7235
 @email=cliente.demo@example.com
 @senha=DemoHelpDesk123!
+@emailAtendente = atendente.demo@exemplo.com
+@senhaAtendente = Atendente123!
+
 
 # 1. Cadastrar cliente. Se o email ja existir, troque a variavel @email acima.
 # @name cadastro
@@ -89,3 +92,63 @@ Content-Type: application/json
   "status": "Concluido",
   "prioridade": "Baixa"
 }
+
+  ###
+
+# cadastrar atendente
+POST {{baseUrl}}/api/UsuariosController
+Content-Type: application/json
+
+{
+  "nome": "Atendente Demo",
+  "email": "{{emailAtendente}}",
+  "senha": "{{senhaAtendente}}"
+}
+
+###
+
+# login atendente
+# @name loginAtendente
+POST {{baseUrl}}/Auth/login
+Content-Type: application/json
+
+{
+  "email": "{{emailAtendente}}",
+  "senha": "{{senhaAtendente}}"
+}
+
+###
+
+# atendente lista todos os chamados
+GET {{baseUrl}}/api/chamados
+Authorization: Bearer {{loginAtendente.response.body.$.token}}
+
+###
+
+# atendente altera status e prioridade (esperado 200 ou 204)
+PUT {{baseUrl}}/api/chamados/{{chamado.response.body.$.id}}
+Authorization: Bearer {{loginAtendente.response.body.$.token}}
+Content-Type: application/json
+
+{
+  "status": "Concluido",
+  "prioridade": "Baixa"
+}
+
+###
+
+# atendente responde o chamado
+POST {{baseUrl}}/api/interacoes
+Authorization: Bearer {{loginAtendente.response.body.$.token}}
+Content-Type: application/json
+
+{
+  "mensagem": "Resolvido",
+  "chamadoId": {{chamado.response.body.$.id}}
+}
+
+###
+
+# confere se o status mudou
+GET {{baseUrl}}/api/chamados/{{chamado.response.body.$.id}}
+Authorization: Bearer {{loginAtendente.response.body.$.token}}
