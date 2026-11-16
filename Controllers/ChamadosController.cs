@@ -8,25 +8,33 @@ using System.Security.Claims;
 
 namespace HelpDeskAPI.Controllers
 {
+    // Controller de abertura, consulta, atualização e exclusão de chamados.
     [ApiController]
     [Route("api/chamados")]
     [Authorize(Roles = "Cliente,Atendente")]
     public class ChamadosController : ControllerBase
     {
+        // Código SQLite historicamente usado para identificar restrição de FK.
         private const int CodigoRestricaoChaveEstrangeira = 787;
 
+        // Mantém a validação de domínio compatível com os valores aceitos pelo banco/API.
         private static bool StatusValido(string status) =>
             status is "Aberto" or "Em andamento" or "Concluido";
 
+        // Verifica se a prioridade pertence ao conjunto definido pelo sistema.
         private static bool PrioridadeValida(string prioridade) =>
             prioridade is "Baixa" or "Media" or "Alta";
 
+        // DAO responsável pela comunicação com a tabela de chamados.
         private readonly ChamadoDao _chamadoDao;
+        // ID do usuário obtido do token atual.
         private int? UsuarioId => int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : null;
+        // Injeta o DAO para uso nos endpoints.
         public ChamadosController(ChamadoDao chamadoDao)
         {
             _chamadoDao = chamadoDao;
         }
+        // Lista todos os chamados do Atendente ou apenas os do Cliente atual.
         [HttpGet]
 
         public async Task<IActionResult> Listar()
@@ -37,6 +45,7 @@ namespace HelpDeskAPI.Controllers
 
 
         }
+        // Busca um chamado e verifica se o solicitante pode visualizá-lo.
         [HttpGet("{id}")]
         public async Task<IActionResult> Buscar(int id)
         {
@@ -48,22 +57,26 @@ namespace HelpDeskAPI.Controllers
             }
             return Ok(busca);
         }
+        // Abre um novo chamado para o usuário autenticado.
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> Cadastrar([FromBody] Chamado chamado)
         {
+            // Valida campos essenciais antes de persistir.
             if (string.IsNullOrWhiteSpace(chamado.Titulo) ||
                 string.IsNullOrWhiteSpace(chamado.Descricao))
             {
                 return BadRequest("Título e descrição são obrigatórios.");
             }
 
+            // Valida os valores controlados de status e prioridade.
             if (!StatusValido(chamado.Status) || !PrioridadeValida(chamado.Prioridade))
             {
                 return BadRequest("Status ou prioridade inválidos.");
             }
 
             if (UsuarioId is not int usuarioId) return Forbid();
+            // Nunca confia no UsuarioId enviado pelo cliente; usa a identidade do JWT.
             chamado.UsuarioId = usuarioId;
             try
             {
@@ -82,6 +95,7 @@ namespace HelpDeskAPI.Controllers
         );
 
         }
+        // Atualiza status e prioridade; somente Atendentes possuem essa permissão.
         [HttpPut("{id}")]
         [Authorize(Roles = "Atendente")]
 
@@ -104,6 +118,7 @@ namespace HelpDeskAPI.Controllers
 
 
         }
+        // Exclui um chamado quando não há interações dependentes.
         [HttpDelete("{id}")]
         [Authorize(Roles = "Atendente")]
 
@@ -126,6 +141,7 @@ namespace HelpDeskAPI.Controllers
 
 
         }
+        // Filtra chamados por status e aplica o escopo do usuário autenticado.
         [HttpGet("status/{status}")]
 
         public async Task<IActionResult> BuscarPorStatusAsync(string status)
@@ -137,6 +153,7 @@ namespace HelpDeskAPI.Controllers
 
 
         }
+        // Filtra chamados por prioridade e aplica o escopo do usuário autenticado.
         [HttpGet("prioridade/{prioridade}")]
 
         public async Task<IActionResult> BuscarPorPrioridadeAsync(string prioridade)

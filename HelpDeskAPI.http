@@ -1,5 +1,6 @@
 @HelpDeskAPI_HostAddress = http://localhost:5078
 
+# Requisição de exemplo gerada pelo template do ASP.NET Core.
 GET {{HelpDeskAPI_HostAddress}}/weatherforecast/
 Accept: application/json
 

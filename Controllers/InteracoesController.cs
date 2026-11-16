@@ -7,16 +7,21 @@ using System.Security.Claims;
 
 namespace HelpDeskAPI.Controllers
 {
+    // Controller de mensagens associadas aos chamados.
     [ApiController]
     [Route("api/interacoes")]
     [Authorize(Roles = "Cliente,Atendente")]
 
     public class InteracoesController : ControllerBase
     {
+        // DAO das interações.
         private readonly InteracaoDao _interacaoDao;
+        // DAO usado para validar o acesso ao chamado relacionado.
         private readonly ChamadoDao _chamadoDao;
+        // Recupera o ID do usuário autenticado; retorna null para token sem claim válida.
         private int? UsuarioId => int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : null;
 
+        // Injeta os DAOs necessários aos endpoints.
         public InteracoesController(InteracaoDao interacaoDao, ChamadoDao chamadoDao)
         {
 
@@ -24,11 +29,13 @@ namespace HelpDeskAPI.Controllers
             _chamadoDao = chamadoDao;
 
         }
+        // Atendentes acessam qualquer chamado; Clientes somente os próprios.
         private async Task<bool> PodeAcessarChamado(int chamadoId, int usuarioId)
         {
             var chamado = await _chamadoDao.BuscarPorIdAsync(chamadoId);
             return chamado != null && (User.IsInRole("Atendente") || chamado.UsuarioId == usuarioId);
         }
+        // Lista tudo para Atendente e somente interações dos chamados do Cliente.
         [HttpGet]
 
         public async Task<IActionResult> Listar()
@@ -42,6 +49,7 @@ namespace HelpDeskAPI.Controllers
             return Ok(lista.Where(interacao => meusChamados.Contains(interacao.ChamadoId)));
 
         }
+        // Busca uma interação depois de validar o acesso ao chamado pai.
         [HttpGet("{id}")]
 
         public async Task<IActionResult> Buscar(int id)
@@ -56,11 +64,13 @@ namespace HelpDeskAPI.Controllers
 
         }
 
+        // Cria interação para o chamado acessível ao usuário autenticado.
         [HttpPost]
         [Authorize]
 
         public async Task<IActionResult> Cadastrar([FromBody] Interacao? interacao)
         {
+            // Rejeita corpo ausente ou mensagem sem conteúdo.
             if (interacao is null || string.IsNullOrWhiteSpace(interacao.Mensagem))
             {
                 return BadRequest("A mensagem é obrigatória.");
@@ -68,6 +78,7 @@ namespace HelpDeskAPI.Controllers
 
             if (UsuarioId is not int usuarioId) return Forbid();
             if (!await PodeAcessarChamado(interacao.ChamadoId, usuarioId)) return NotFound();
+            // O autor vem do token, não do corpo recebido.
             interacao.UsuarioId = usuarioId;
             await _interacaoDao.AdicionarAsync(interacao);
 
@@ -78,6 +89,7 @@ namespace HelpDeskAPI.Controllers
        );
         }
 
+        // Permite que Atendentes corrijam a mensagem de qualquer interação acessível.
         [HttpPut("{id}")]
         [Authorize(Roles = "Atendente")]
 
@@ -100,6 +112,7 @@ namespace HelpDeskAPI.Controllers
 
         }
 
+        // Cliente só remove sua própria interação; Atendente também passa pela regra atual.
         [HttpDelete("{id}")]
 
         public async Task<IActionResult> Deletar(int id)
@@ -117,6 +130,7 @@ namespace HelpDeskAPI.Controllers
 
         }
 
+        // Lista as interações de um chamado autorizado.
         [HttpGet("chamado/{chamadoId}")]
 
         public async Task<IActionResult> BuscarPorChamado(int chamadoId)
@@ -127,6 +141,7 @@ namespace HelpDeskAPI.Controllers
             return Ok(BuscarChamado);
 
         }
+        // Lista interações de um usuário, limitando Clientes aos seus próprios chamados.
         [HttpGet("usuario/{usuarioId}")]
 
         public async Task<IActionResult> BuscarPorUsuario(int usuarioId)

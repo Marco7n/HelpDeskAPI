@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HelpDeskAPI.Controllers
 {
+    // Controller público responsável por transformar credenciais em token JWT.
     [ApiController]
     [Route("[controller]")]
     public class AuthController : ControllerBase

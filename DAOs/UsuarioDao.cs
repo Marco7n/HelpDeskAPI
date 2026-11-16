@@ -7,17 +7,20 @@ namespace HelpDeskAPI.DAOs
 {
     // TODO Marco: receber HelpDeskContext no construtor e implementar as operacoes de InteracaoDao.
     // Implementar uma operacao por vez, persistindo e consultando pelo contexto.
+    // Camada de persistência responsável pelas operações de Usuario.
     public class UsuarioDao 
     {
-        
+         // Contexto EF Core usado para consultar e salvar usuários.
          private readonly HelpDeskContext _contexto;
         
+        // Recebe o contexto por injeção de dependência.
         public UsuarioDao (HelpDeskContext contexto )
         {
             _contexto = contexto;
            
         }
         
+        // Insere o usuário e dispara a validação de unicidade do e-mail no banco.
         public async Task AdicionarAsync(Usuario usuario)
         {
             
@@ -25,15 +28,18 @@ namespace HelpDeskAPI.DAOs
             await _contexto.SaveChangesAsync();
          
         }
+        // Busca um usuário pela chave primária; retorna null se não existir.
         public async Task<Usuario?> BuscarPorIdAsync(int id) {
             
            var encontrar = await _contexto.Usuarios.FindAsync(id);
             return encontrar;
         }
+        // Lista todas as entidades; o controller converte-as para DTOs públicos.
         public async Task<List<Usuario>> ListaTodosAsync() { 
             var lista = await _contexto.Usuarios.ToListAsync();
             return lista;
         }
+        // Atualiza somente nome e e-mail do usuário encontrado.
         public async Task<bool> AtualizarAsync(int id, Usuario dadosAtualizados)
         {
             var usuario = await _contexto.Usuarios.FindAsync(id);
@@ -51,6 +57,7 @@ namespace HelpDeskAPI.DAOs
 
 
         }
+        // Remove o usuário; chaves relacionadas podem gerar conflito controlado.
         public async Task<bool> ExcluirAsync(int id)
         {
 
@@ -64,6 +71,7 @@ namespace HelpDeskAPI.DAOs
             await _contexto.SaveChangesAsync();
             return true;
         }
+        // Mantém o nome legado do método, mas filtra pelo Perfil da entidade Usuario.
         public async Task<List<Usuario>> BuscarPorStatusAsync(string perfil)
         {
             var buscaPerfil = await _contexto.Usuarios
@@ -73,6 +81,7 @@ namespace HelpDeskAPI.DAOs
             return buscaPerfil;
         }
 
+        // Pesquisa usuários cujo nome seja exatamente o valor informado.
         public async Task<List<Usuario>> BuscarNomeAsync(string nome)
         {
 

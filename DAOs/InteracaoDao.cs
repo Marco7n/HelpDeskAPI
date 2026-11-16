@@ -4,31 +4,38 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HelpDeskAPI.DAOs
 {
+    // Camada de persistência das mensagens de interação.
     public class InteracaoDao
     {
+        // Contexto que executa as consultas e comandos no banco.
         private readonly HelpDeskContext _contexto;
 
+        // Recebe o contexto por injeção de dependência.
         public InteracaoDao(HelpDeskContext contexto)
         {
             _contexto = contexto;
         }
 
+        // Persiste uma nova interação já associada ao usuário autenticado.
         public async Task AdicionarAsync(Interacao interacao)
         {
             _contexto.Interacoes.Add(interacao);
             await _contexto.SaveChangesAsync();
         }
 
+        // Busca uma interação individual.
         public async Task<Interacao?> BuscarPorIdAsync(int id)
         {
             return await _contexto.Interacoes.FindAsync(id);
         }
 
+        // Lista todas as interações; o controller aplica o filtro de acesso.
         public Task<List<Interacao>> ListaTodosAsync()
         {
             return _contexto.Interacoes.ToListAsync();
         }
 
+        // Altera somente a mensagem, preservando autor e vínculo original.
         public async Task<bool> AtualizarAsync(int id, Interacao dadosAtualizados)
         {
             
@@ -43,6 +50,7 @@ namespace HelpDeskAPI.DAOs
             return true;
         }
 
+        // Exclui uma interação existente.
         public async Task<bool> ExcluirAsync(int id)
         {
             var interacao = await _contexto.Interacoes.FindAsync(id);
@@ -56,11 +64,13 @@ namespace HelpDeskAPI.DAOs
             return true;
         }
 
+        // Retorna as interações pertencentes a um chamado.
         public Task<List<Interacao>> BuscarPorChamadoAsync(int chamadoId)
         {
             return _contexto.Interacoes.Where(item => item.ChamadoId == chamadoId).ToListAsync();
         }
 
+        // Retorna as interações criadas por um usuário específico.
         public Task<List<Interacao>> BuscarPorUsuarioAsync(int usuarioId)
         {
             try

@@ -3,8 +3,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HelpDeskAPI.Data
 {
+    // Ponte entre as entidades da aplicação e as tabelas do banco via EF Core.
     public class HelpDeskContext : DbContext
     {
+        // Recebe as opções configuradas no Program.cs, incluindo o provider SQLite.
         public HelpDeskContext(DbContextOptions<HelpDeskContext> options) : base(options)
         {
         }
@@ -15,6 +17,7 @@ namespace HelpDeskAPI.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Garante que dois usuários não possam possuir o mesmo e-mail.
             modelBuilder.Entity<Usuario>().HasIndex(usuario => usuario.Email).IsUnique();
 
             var chamado = modelBuilder.Entity<Chamado>();

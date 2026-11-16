@@ -4,6 +4,7 @@ namespace HelpDeskAPI.DTOs;
 
 public class UsuarioCadastroDto
 {
+    // Nome recebido no cadastro; o controller cria a entidade Usuario a partir dele.
     [Required(ErrorMessage = "O nome é obrigatório.")]
     public string Nome { get; set; } = string.Empty;
     

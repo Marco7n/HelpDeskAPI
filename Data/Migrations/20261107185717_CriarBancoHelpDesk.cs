@@ -5,12 +5,14 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace HelpDeskAPI.Data.Migrations
 {
+    // Migration inicial: cria as tabelas, índices e relacionamentos do HelpDesk.
     /// <inheritdoc />
     public partial class CriarBancoHelpDesk : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // Cria a tabela principal de usuários.
             migrationBuilder.CreateTable(
                 name: "Usuarios",
                 columns: table => new
@@ -27,6 +29,7 @@ namespace HelpDeskAPI.Data.Migrations
                     table.PrimaryKey("PK_Usuarios", x => x.Id);
                 });
 
+            // Cria os chamados, vinculados ao usuário que os abriu.
             migrationBuilder.CreateTable(
                 name: "Chamados",
                 columns: table => new
@@ -50,6 +53,7 @@ namespace HelpDeskAPI.Data.Migrations
                         principalColumn: "Id");
                 });
 
+            // Cria as interações, vinculadas a um chamado e a um usuário.
             migrationBuilder.CreateTable(
                 name: "Interacoes",
                 columns: table => new
@@ -76,21 +80,25 @@ namespace HelpDeskAPI.Data.Migrations
                         principalColumn: "Id");
                 });
 
+            // Índice para acelerar a consulta de chamados por usuário.
             migrationBuilder.CreateIndex(
                 name: "IX_Chamados_UsuarioId",
                 table: "Chamados",
                 column: "UsuarioId");
 
+            // Índice para acelerar a consulta de interações por chamado.
             migrationBuilder.CreateIndex(
                 name: "IX_Interacoes_ChamadoId",
                 table: "Interacoes",
                 column: "ChamadoId");
 
+            // Índice para acelerar a consulta de interações por usuário.
             migrationBuilder.CreateIndex(
                 name: "IX_Interacoes_UsuarioId",
                 table: "Interacoes",
                 column: "UsuarioId");
 
+            // Índice único que impede e-mails duplicados.
             migrationBuilder.CreateIndex(
                 name: "IX_Usuarios_Email",
                 table: "Usuarios",
@@ -101,6 +109,7 @@ namespace HelpDeskAPI.Data.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            // Remove as tabelas na ordem inversa para respeitar as dependências.
             migrationBuilder.DropTable(
                 name: "Interacoes");
 

@@ -8,8 +8,10 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace HelpDeskAPI.Services
 {
+    // Centraliza autenticação, hash de senha e emissão de tokens JWT.
     public class AuthService
     {
+        // Contexto usado para buscar o usuário durante o login.
         private readonly HelpDeskContext _contexto;
         private readonly IConfiguration _configuracao;
 

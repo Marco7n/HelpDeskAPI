@@ -7,17 +7,21 @@ using Microsoft.EntityFrameworkCore;
 namespace HelpDeskAPI.DAOs
 {
 
+    // Camada de persistência dos chamados, isolando EF Core dos controllers.
     public class ChamadoDao
     {
 
+        // Contexto que representa o banco atual da requisição.
         private readonly HelpDeskContext _contexto;
 
+        // Recebe o contexto configurado com SQLite.
         public ChamadoDao(HelpDeskContext contexto)
         {
             _contexto = contexto;
 
         }
 
+        // Adiciona e persiste um novo chamado.
         public async Task AdicionarAsync(Chamado chamado)
         {
 
@@ -26,6 +30,7 @@ namespace HelpDeskAPI.DAOs
 
         }
 
+        // Busca um chamado por ID para leitura ou verificação de acesso.
         public async Task<Chamado?> BuscarPorIdAsync(int id)
         {
 
@@ -51,10 +56,12 @@ namespace HelpDeskAPI.DAOs
     
 
 
+    // Retorna todos os chamados para posterior filtragem por perfil no controller.
     public async Task<List<Chamado>> ListaTodosAsync() { 
             var lista = await _contexto.Chamados.ToListAsync();
             return lista;
         }
+        // Atualiza o status e a prioridade do chamado existente.
         public async Task<bool> AtualizarAsync(int id, Chamado dadosAtualizados)
         {
             var find = await _contexto.Chamados.FindAsync(id);
@@ -71,6 +78,7 @@ namespace HelpDeskAPI.DAOs
 
         }
 
+        // Remove o chamado; falha se ainda existirem interações dependentes.
         public async Task<bool> ExcluirAsync(int id)
         {
 
@@ -93,6 +101,7 @@ namespace HelpDeskAPI.DAOs
             }
         }
 
+        // Consulta chamados pelo status informado.
         public async Task<List<Chamado>> BuscarPorStatusAsync(string status)
         {
             var BuscaStatus = await _contexto.Chamados
@@ -104,6 +113,7 @@ namespace HelpDeskAPI.DAOs
 
         }
 
+        // Consulta chamados pela prioridade informada.
         public async Task<List<Chamado>> BuscarPorPrioridadeAsync(string prioridade)
         {
 

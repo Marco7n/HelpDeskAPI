@@ -4,9 +4,12 @@ using System.Text.Json.Serialization;
 namespace HelpDeskAPI.Models
 
 {
+    // Entidade que representa uma solicitação de atendimento.
     public class Chamado
     {
+        // Identificador do chamado.
         public int Id { get; set; }
+        // Título obrigatório e limitado para evitar entradas excessivamente grandes.
         [Required(ErrorMessage = "O título é obrigatório.")]
         [StringLength(200)]
         public string Titulo { get; set; } = string.Empty;
@@ -22,13 +25,17 @@ namespace HelpDeskAPI.Models
         [Required(ErrorMessage = "A prioridade é obrigatória.")]
         [RegularExpression("Baixa|Media|Alta", ErrorMessage = "Prioridade inválida.")]
         public string Prioridade { get; set; } = string.Empty;
+        // Preenchido pelo SQLite com CURRENT_TIMESTAMP quando inserido.
         public DateTime DataCriacao { get; set; }
 
+        // Chave estrangeira do usuário que abriu o chamado.
         public int UsuarioId { get; set; }
 
+        // Navegação ignorada no JSON para evitar expor ou serializar ciclos.
         [JsonIgnore]
         public Usuario? Usuario { get; set; }
 
+        // Interações associadas; também não são serializadas neste modelo.
         [JsonIgnore]
         public ICollection<Interacao> Interacoes { get; set; } = new List<Interacao>();
     }
