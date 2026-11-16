@@ -1,12 +1,10 @@
-# Inicie a API com o perfil https e envie o login antes das rotas protegidas.
 @baseUrl=https://localhost:7235
 @email=cliente.demo@example.com
 @senha=DemoHelpDesk123!
-@emailAtendente = atendente.demo@exemplo.com
-@senhaAtendente = Atendente123!
+@emailAtendente=atendente.demo@exemplo.com
+@senhaAtendente=Atendente123!
 
-
-# 1. Cadastrar cliente. Se o email ja existir, troque a variavel @email acima.
+# 1. Cadastrar Cliente. Pule se a conta ja existe.
 # @name cadastro
 POST {{baseUrl}}/api/UsuariosController
 Content-Type: application/json
@@ -19,7 +17,7 @@ Content-Type: application/json
 
 ###
 
-# 2. Login. Envie esta requisicao antes das demais protegidas.
+# 2. Login do Cliente
 # @name login
 POST {{baseUrl}}/Auth/login
 Content-Type: application/json
@@ -31,13 +29,13 @@ Content-Type: application/json
 
 ###
 
-# 3. Listar chamados do cliente.
+# 3. Listar chamados do Cliente
 GET {{baseUrl}}/api/chamados
 Authorization: Bearer {{login.response.body.$.token}}
 
 ###
 
-# 4. Criar chamado. O ID retornado sera usado nos proximos testes.
+# 4. Criar chamado como Cliente
 # @name chamado
 POST {{baseUrl}}/api/chamados
 Authorization: Bearer {{login.response.body.$.token}}
@@ -52,19 +50,19 @@ Content-Type: application/json
 
 ###
 
-# 5. Consultar o chamado criado.
+# 5. Consultar o chamado criado
 GET {{baseUrl}}/api/chamados/{{chamado.response.body.$.id}}
 Authorization: Bearer {{login.response.body.$.token}}
 
 ###
 
-# 6. Filtrar chamados abertos.
+# 6. Filtrar chamados abertos
 GET {{baseUrl}}/api/chamados/status/Aberto
 Authorization: Bearer {{login.response.body.$.token}}
 
 ###
 
-# 7. Criar interacao no chamado.
+# 7. Criar interacao como Cliente
 # @name interacao
 POST {{baseUrl}}/api/interacoes
 Authorization: Bearer {{login.response.body.$.token}}
@@ -77,13 +75,13 @@ Content-Type: application/json
 
 ###
 
-# 8. Listar interacoes do chamado.
+# 8. Listar interacoes do chamado
 GET {{baseUrl}}/api/interacoes/chamado/{{chamado.response.body.$.id}}
 Authorization: Bearer {{login.response.body.$.token}}
 
 ###
 
-# 9. Confirmar que Cliente nao pode alterar chamado (resposta esperada: 403).
+# 9. Cliente tenta alterar o chamado. Esperado: 403.
 PUT {{baseUrl}}/api/chamados/{{chamado.response.body.$.id}}
 Authorization: Bearer {{login.response.body.$.token}}
 Content-Type: application/json
@@ -93,21 +91,9 @@ Content-Type: application/json
   "prioridade": "Baixa"
 }
 
-  ###
-
-# cadastrar atendente
-POST {{baseUrl}}/api/UsuariosController
-Content-Type: application/json
-
-{
-  "nome": "Atendente Demo",
-  "email": "{{emailAtendente}}",
-  "senha": "{{senhaAtendente}}"
-}
-
 ###
 
-# login atendente
+# 10. Login do Atendente que ja existe no banco
 # @name loginAtendente
 POST {{baseUrl}}/Auth/login
 Content-Type: application/json
@@ -119,13 +105,26 @@ Content-Type: application/json
 
 ###
 
-# atendente lista todos os chamados
+# 11. Cadastrar outro Atendente. Esperado: 201 com perfil Atendente.
+POST {{baseUrl}}/api/UsuariosController/atendentes
+Authorization: Bearer {{loginAtendente.response.body.$.token}}
+Content-Type: application/json
+
+{
+  "nome": "Atendente",
+  "email": "{{emailAtendente}}",
+  "senha": "{{senhaAtendente}}"
+}
+
+###
+
+# 12. Atendente lista todos os chamados
 GET {{baseUrl}}/api/chamados
 Authorization: Bearer {{loginAtendente.response.body.$.token}}
 
 ###
 
-# atendente altera status e prioridade (esperado 200 ou 204)
+# 13. Atendente altera o chamado. Esperado: 204.
 PUT {{baseUrl}}/api/chamados/{{chamado.response.body.$.id}}
 Authorization: Bearer {{loginAtendente.response.body.$.token}}
 Content-Type: application/json
@@ -137,7 +136,7 @@ Content-Type: application/json
 
 ###
 
-# atendente responde o chamado
+# 14. Atendente responde ao chamado
 POST {{baseUrl}}/api/interacoes
 Authorization: Bearer {{loginAtendente.response.body.$.token}}
 Content-Type: application/json
@@ -149,6 +148,6 @@ Content-Type: application/json
 
 ###
 
-# confere se o status mudou
+# 15. Conferir o status atualizado
 GET {{baseUrl}}/api/chamados/{{chamado.response.body.$.id}}
 Authorization: Bearer {{loginAtendente.response.body.$.token}}
