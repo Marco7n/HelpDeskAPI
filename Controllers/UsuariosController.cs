@@ -51,23 +51,16 @@ namespace HelpDeskAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> Cadastrar([FromBody] UsuarioCadastroDto dados)
         {
-            try
+            var usuario = new Usuario
             {
-                var usuario = new Usuario
-                {
-                    Nome = dados.Nome,
-                    Email = dados.Email,
-                    SenhaHash = _authService.GerarHash(dados.Senha),
-                    Perfil = "Cliente"
-                };
+                Nome = dados.Nome,
+                Email = dados.Email,
+                SenhaHash = _authService.GerarHash(dados.Senha),
+                Perfil = "Cliente"
+            };
 
-                await _usuarioDao.AdicionarAsync(usuario);
-                return CreatedAtAction(nameof(Buscar), new { id = usuario.Id }, Resposta(usuario));
-            }
-            catch (Exception)
-            {
-                return BadRequest("Nao foi possivel cadastrar os dados");
-            }
+            await _usuarioDao.AdicionarAsync(usuario);
+            return CreatedAtAction(nameof(Buscar), new { id = usuario.Id }, Resposta(usuario));
         }
 
         [HttpPut("{id}")]
@@ -112,10 +105,18 @@ namespace HelpDeskAPI.Controllers
             return NoContent();
         }
 
-        [HttpGet("prioridade/{prioridade}")]
-        public async Task<IActionResult> BuscarNomeAsync(string prioridade)
+        [HttpGet("nome/{nome}")]
+        public async Task<IActionResult> BuscarNomeAsync(string nome)
         {
-            var usuarios = await _usuarioDao.BuscarNomeAsync(prioridade);
+            var usuarios = await _usuarioDao.BuscarNomeAsync(nome);
+            return Ok(usuarios.Select(Resposta));
+        }
+
+        [HttpGet("perfil/{perfil}")]
+        [Authorize(Roles = "Atendente")]
+        public async Task<IActionResult> BuscarPorPerfilAsync(string perfil)
+        {
+            var usuarios = await _usuarioDao.BuscarPorStatusAsync(perfil);
             return Ok(usuarios.Select(Resposta));
         }
     }

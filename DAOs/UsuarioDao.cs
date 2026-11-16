@@ -64,15 +64,13 @@ namespace HelpDeskAPI.DAOs
             await _contexto.SaveChangesAsync();
             return true;
         }
-        public async Task<List<Usuario>> BuscarPorStatusAsync(string nome)
+        public async Task<List<Usuario>> BuscarPorStatusAsync(string perfil)
         {
-            var BuscaStatus = await _contexto.Usuarios
-                .Where(s => s.Nome == nome)
+            var buscaPerfil = await _contexto.Usuarios
+                .Where(usuario => usuario.Perfil == perfil)
                 .ToListAsync();
 
-            return BuscaStatus;
-
-
+            return buscaPerfil;
         }
 
         public async Task<List<Usuario>> BuscarNomeAsync(string nome)
